@@ -114,26 +114,16 @@ class AutMath:
 
     # 足し算のメソッド
     def addition(self, ad1, ad2):
-
-        add = (str(ad1) + '+' + str("("+ad2+")" if ad2 < 0 else ad2) + '=  \t')
+        add = (str(ad1) + '+' + str("("+ad2+")" if ad2 < 0 else ad2))
         ad3 = ad1 + ad2
-        add_answer = ('=' + str(ad3) + '\t' + '\t')
+        add_answer = ('=' + str(ad3))
         return add, add_answer
 
     # 引き算のメソッド
-    def subtraction_integer(self):
-        su1 = random.randint(1, 99)
-        su2 = random.randint(1, 99)
-
-        su1 = self.carrying(su1, 1)
-
-        su1 = self.carrying(su1, 1, numerical=-1)
-
-        su2 = self.carrying(su2, 1, numerical=-1)
-
-        sub = (str(su1) + '-' + str("("+su2+")" if su2 < 0 else su2) + '=  \t')
+    def subtraction_integer(self, su1, su2):
+        sub = (str(su1) + '-' + str("("+su2+")" if su2 < 0 else su2))
         su3 = su1 - su2
-        sub_answer = ('=' + str(su3) + '\t' + '\t')
+        sub_answer = ('=' + str(su3))
         return sub, sub_answer
 
     # 掛け算のメソッド
