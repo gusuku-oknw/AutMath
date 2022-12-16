@@ -18,31 +18,6 @@ MathL = ''
 MathL_answer = ''
 
 
-class Configuration:
-    def __init__(self):
-        percent = 0
-
-    def probability(self, percent):
-        coin = random.random()
-        # %で確率調整
-        if coin * 100 < percent:
-            return True
-        else:
-            return False
-
-    def now_time(self):
-        dt_now = datetime.datetime.now()
-        dt_name = str(dt_now.strftime('%Y.%m%d-%M%S'))
-        return dt_name
-
-    @staticmethod
-    def mypath(file):
-        cwd = os.path.abspath(file)
-        # cwd += '/'
-        print(cwd)
-        return cwd
-
-
 class ThreeButtonEvent(wx.PyCommandEvent):
     def __init__(self, evtType, id):
         wx.PyCommandEvent.__init__(self, evtType, id)
@@ -97,6 +72,112 @@ class ThreeButtonPanel(wx.Panel):
 
 
 class AutMath:
+    def __init__(self, percent):
+        self.percent = percent
+        print("default:"+str(percent))
+        self.now_time()
+
+    def probability(self, percent=None):
+        coin = random.random()
+        # %で確率調整
+        if coin * 100 < (self.percent if percent is None else percent):
+            return True
+        else:
+            return False
+
+    def carrying(self, value, mun, percent=None, numerical=None):
+        print(value)
+        if mun < 1:
+            return value
+        # print(mun)
+        if self.probability(percent=percent):
+            value *= (random.randint(1, 10) if numerical is None else numerical)
+
+        return self.carrying(value, mun - 1, percent=percent)
+
+    # 足し算のメソッド
+    def addition(self):
+        ad1 = random.randint(1, 99)
+        ad2 = random.randint(1, 99)
+
+        ad1 = self.carrying(ad1, 1)
+
+        ad1 = self.carrying(ad1, 1, numerical=-1)
+
+        ad2 = self.carrying(ad2, 1, numerical=-1)
+
+        add = (str(ad1) + '+' + str(ad2) + '=  \t')
+        ad3 = ad1 + ad2
+        add_answer = ('=' + str(ad3) + '\t' + '\t')
+        return add, add_answer
+
+    # 引き算のメソッド
+    def subtraction(self):
+        su1 = random.randint(1, 99)
+        su2 = random.randint(1, 99)
+
+        su1 = self.carrying(su1, 1)
+
+        su1 = self.carrying(su1, 1, numerical=-1)
+
+        su2 = self.carrying(su2, 1, numerical=-1)
+
+        sub = (str(su1) + '-' + str(su2) + '=  \t')
+        su3 = su1 - su2
+        sub_answer = ('=' + str(su3) + '\t' + '\t')
+        return sub, sub_answer
+
+    # 掛け算のメソッド
+    def multiplication(self):
+        mu1 = random.randint(1, 9)
+        mu2 = random.randint(1, 9)
+
+        mu1 = self.carrying(mu1, 1)
+
+        mu2 = self.carrying(mu2, 1, percent=50)
+
+        mu1 = self.carrying(mu1, 1, numerical=-1)
+
+        mu2 = self.carrying(mu2, 1, numerical=-1)
+
+        mul = (str(mu1) + '×' + str(mu2) + '=  \t')
+        mul_answer = ('=' + str(mu1 * mu2) + '\t' + '\t')
+        return mul, mul_answer
+
+    # 割り算のメソッド
+    def division(self):
+        di2 = random.randint(2, 9)
+        answer = random.randint(2, 10)
+
+        di2 = self.carrying(di2, 2)
+
+        answer = self.carrying(answer, 2)
+
+        di2 = self.carrying(di2, 1, numerical=-1)
+
+        answer = self.carrying(answer, 1, numerical=-1)
+
+        if di2 > answer:
+            di2, answer = answer, di2
+
+        # di1を求める
+        di1 = di2 * answer
+
+        sdiv = (str(di1) + '÷' + str(di2) + '=')
+        sdiv_answer = ('=' + str(answer))
+        return sdiv, sdiv_answer
+
+    def now_time(self):
+        dt_now = datetime.datetime.now()
+        dt_name = str(dt_now.strftime('%Y.%m%d-%M%S'))
+        return dt_name
+
+    def mypath(self, file):
+        cwd = os.path.abspath(file)
+        # cwd += '/'
+        print(cwd)
+        return cwd
+
     # 問題docx生成のメソッド
     @staticmethod
     def add_docx(name):
@@ -144,86 +225,6 @@ class AutMath:
 
         # convert()
 
-    # 足し算のメソッド
-    def addition(self):
-        ad1 = random.randint(1, 99)
-        ad2 = random.randint(1, 99)
-        coin = Configuration()
-        if coin.probability(30):
-            ad1 *= 10
-
-        if coin.probability(30):
-            ad1 *= -1
-
-        if coin.probability(30):
-            ad2 *= 10
-
-        sadd = (str(ad1) + '+' + str(ad2) + '=  \t')
-        ad3 = ad1 + ad2
-        sadd_answer = ('=' + str(ad3) + '\t' + '\t')
-        return sadd, sadd_answer
-
-    # 引き算のメソッド
-    @staticmethod
-    def subtraction():
-        su1 = random.randint(1, 99)
-        su2 = random.randint(1, 99)
-        coin = Configuration()
-        if coin.probability(30):
-            su1 *= 10
-
-        if coin.probability(30):
-            su1 *= -1
-
-        if coin.probability(30):
-            su2 *= 10
-
-        ssub = (str(su1) + '-' + str(su2) + '=  \t')
-        su3 = su1 - su2
-        ssub_answer = ('=' + str(su3) + '\t' + '\t')
-        return ssub, ssub_answer
-
-    # 掛け算のメソッド
-    @staticmethod
-    def multiplication():
-        mu1 = random.randint(1, 9)
-        mu2 = random.randint(1, 9)
-        coin = Configuration()
-        if coin.probability(60):
-            mu1 *= random.randint(1, 10)
-
-        if coin.probability(30):
-            mu1 *= -1
-
-        if coin.probability(50):
-            mu2 *= random.randint(1, 10)
-
-        if coin.probability(30):
-            mu2 *= -1
-
-        smul = (str(mu1) + '×' + str(mu2) + '=  \t')
-        smul_answer = ('=' + str(mu1 * mu2) + '\t' + '\t')
-        return smul, smul_answer
-
-    # 割り算のメソッド
-    @staticmethod
-    def division():
-        di2 = random.randint(2, 9)
-        di1 = di2 * random.randint(2, 10)
-        coin = Configuration()
-        if coin.probability(30):
-            di1 *= random.randint(1, 10)
-            if coin.probability(30):
-                di2 *= random.randint(1, 10)
-        if coin.probability(30):
-            di1 *= -1
-        if coin.probability(30):
-            di2 *= -1
-
-        sdiv = (str(di1) + '÷' + str(di2) + '=')
-        sdiv_answer = ('=' + str(math.floor(di1 / di2)))
-        return sdiv, sdiv_answer
-
 
 class MyFrame(wx.Frame):
     def __init__(self):
@@ -267,7 +268,6 @@ class MyFrame(wx.Frame):
                 MathL_answer += '\n'
 
         if evt.get_selected_index() == 2:
-            file_data = Configuration()
             math = AutMath()
 
             # 問題のファイル名設定
@@ -291,7 +291,11 @@ class MyFrame(wx.Frame):
         print('Selected index =', evt.get_selected_index())
 
 
-if __name__ == '__main__':
-    app = wx.PySimpleApp()
-    MyFrame().Show()
-    app.MainLoop()
+am = AutMath(50)
+vla = am.carrying(4, 1, numerical=-1)
+print(vla)
+#
+# if __name__ == '__main__':
+#     app = wx.PySimpleApp()
+#     MyFrame().Show()
+#     app.MainLoop()
