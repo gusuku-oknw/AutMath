@@ -1,6 +1,7 @@
 import os
 import wx
 import random
+from fractions import Fraction
 import datetime
 import math
 from docx import Document
@@ -95,8 +96,20 @@ class AutMath:
 
         return self.carrying(value, mun - 1, percent=percent)
 
+    def problem_generation(self):
+        value1 = random.randint(1, 99)
+
+        value2 = random.randint(1, 99)
+
+        value1 = self.carrying(value1, 1)
+
+        value1 = self.carrying(value1, 1, numerical=-1)
+
+        value2 = self.carrying(value2, 1, numerical=-1)
+
+
     # 足し算のメソッド
-    def addition(self):
+    def addition(self, smallquestion):
         ad1 = random.randint(1, 99)
         ad2 = random.randint(1, 99)
 
@@ -106,13 +119,13 @@ class AutMath:
 
         ad2 = self.carrying(ad2, 1, numerical=-1)
 
-        add = (str(ad1) + '+' + str(ad2) + '=  \t')
+        add = (str(ad1) + '+' + str("("+ad2+")" if ad2 < 0 else ad2) + '=  \t')
         ad3 = ad1 + ad2
         add_answer = ('=' + str(ad3) + '\t' + '\t')
         return add, add_answer
 
     # 引き算のメソッド
-    def subtraction(self):
+    def subtraction_integer(self):
         su1 = random.randint(1, 99)
         su2 = random.randint(1, 99)
 
@@ -122,13 +135,13 @@ class AutMath:
 
         su2 = self.carrying(su2, 1, numerical=-1)
 
-        sub = (str(su1) + '-' + str(su2) + '=  \t')
+        sub = (str(su1) + '-' + str("("+su2+")" if su2 < 0 else su2) + '=  \t')
         su3 = su1 - su2
         sub_answer = ('=' + str(su3) + '\t' + '\t')
         return sub, sub_answer
 
     # 掛け算のメソッド
-    def multiplication(self):
+    def multiplication_integer(self):
         mu1 = random.randint(1, 9)
         mu2 = random.randint(1, 9)
 
@@ -140,12 +153,12 @@ class AutMath:
 
         mu2 = self.carrying(mu2, 1, numerical=-1)
 
-        mul = (str(mu1) + '×' + str(mu2) + '=  \t')
+        mul = (str(mu1) + '×' + str("("+mu2+")" if mu2 < 0 else mu2) + '=  \t')
         mul_answer = ('=' + str(mu1 * mu2) + '\t' + '\t')
         return mul, mul_answer
 
     # 割り算のメソッド
-    def division(self):
+    def division_integer(self):
         di2 = random.randint(2, 9)
         answer = random.randint(2, 10)
 
@@ -163,7 +176,7 @@ class AutMath:
         # di1を求める
         di1 = di2 * answer
 
-        sdiv = (str(di1) + '÷' + str(di2) + '=')
+        sdiv = (str(di1) + '÷' + str("("+di2+")" if di2 < 0 else di2) + '=')
         sdiv_answer = ('=' + str(answer))
         return sdiv, sdiv_answer
 
