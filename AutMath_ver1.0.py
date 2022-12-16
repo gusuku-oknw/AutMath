@@ -96,28 +96,24 @@ class AutMath:
 
         return self.carrying(value, mun - 1, percent=percent)
 
-    def problem_generation(self):
-        value1 = random.randint(1, 99)
+    def problem_generation(self, question):
+        if question is None:
+            pass
+        elif question == 1:
+            value1 = random.randint(1, 99)
 
-        value2 = random.randint(1, 99)
+            value2 = random.randint(1, 99)
 
-        value1 = self.carrying(value1, 1)
+            value1 = self.carrying(value1, 1)
 
-        value1 = self.carrying(value1, 1, numerical=-1)
+            value1 = self.carrying(value1, 1, numerical=-1)
 
-        value2 = self.carrying(value2, 1, numerical=-1)
+            value2 = self.carrying(value2, 1, numerical=-1)
 
+            self.addition(value1, value2)
 
     # 足し算のメソッド
-    def addition(self, smallquestion):
-        ad1 = random.randint(1, 99)
-        ad2 = random.randint(1, 99)
-
-        ad1 = self.carrying(ad1, 1)
-
-        ad1 = self.carrying(ad1, 1, numerical=-1)
-
-        ad2 = self.carrying(ad2, 1, numerical=-1)
+    def addition(self, ad1, ad2):
 
         add = (str(ad1) + '+' + str("("+ad2+")" if ad2 < 0 else ad2) + '=  \t')
         ad3 = ad1 + ad2
