@@ -110,7 +110,38 @@ class AutMath:
 
             value2 = self.carrying(value2, 1, numerical=-1)
 
-            self.addition(value1, value2)
+            self.four_rules(value1, value2, random.randint(1, 4))
+
+    def four_rules(self, val1, val2, rules):
+        if rules is None:
+            pass
+
+        elif rules == 1:
+            add = (str(val1) + '+' + str("(" + val2 + ")" if val2 < 0 else val2))
+            add_answer = val1 + val2
+            return add, add_answer
+
+        elif rules == 2:
+            sub = (str(val1) + '-' + str("(" + val2 + ")" if val2 < 0 else val2))
+            sub_answer = val1 - val2
+            return sub, sub_answer
+
+        elif rules == 3:
+            mul = (str(val1) + '×' + str("(" + val2 + ")" if val2 < 0 else val2))
+            mul_answer = val1 * val2
+            return mul, mul_answer
+
+        elif rules == 4:
+            answer = val1
+            if val2 > answer:
+                val2, answer = answer, val2
+
+            # val1を求める
+            val1 = val2 * answer
+
+            div = (str(val1) + '÷' + str("(" + val2 + ")" if val2 < 0 else val2))
+            div_answer = answer
+            return div, div_answer
 
     # 足し算のメソッド
     def addition(self, ad1, ad2):
