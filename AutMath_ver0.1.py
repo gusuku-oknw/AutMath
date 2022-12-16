@@ -6,34 +6,35 @@ import math
 from docx import Document
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.shared import Pt, Inches, RGBColor 
+from docx.shared import Pt, Inches, RGBColor
 from docx.enum.style import WD_STYLE_TYPE
 from docx.api import Document
 from docx.opc.oxml import qn
 
 from docx2pdf import convert
 
-Name_Text = '＃__    名前_____________'  
+Name_Text = '＃__    名前_____________'
 MathL = ''
 MathL_answer = ''
 
 
 class Configuration:
-    @staticmethod
-    def probability(percent):
+    def __init__(self):
+        percent = 0
+
+    def probability(self, percent):
         coin = random.random()
         # %で確率調整
         if coin * 100 < percent:
-            return True 
+            return True
         else:
             return False
-    
-    @staticmethod
-    def now_time():
+
+    def now_time(self):
         dt_now = datetime.datetime.now()
         dt_name = str(dt_now.strftime('%Y.%m%d-%M%S'))
         return dt_name
-    
+
     @staticmethod
     def mypath(file):
         cwd = os.path.abspath(file)
@@ -100,7 +101,7 @@ class AutMath:
     @staticmethod
     def add_docx(name):
         global MathL
-        
+
         print(MathL)
         doc = Document()
 
@@ -109,12 +110,12 @@ class AutMath:
         font = style.font
         font.size = Pt(15)
         font.name = 'BIZ UDゴシック'
-        paragraph_format=style.paragraph_format
+        paragraph_format = style.paragraph_format
 
-        p = doc.add_paragraph(MathL, style = style)
-        
+        p = doc.add_paragraph(MathL, style=style)
+
         p.alignment = WD_ALIGN_PARAGRAPH.LEFT
-        
+
         doc.save(name + ".docx")
 
         convert(name + ".docx", name + ".pdf")
@@ -123,7 +124,7 @@ class AutMath:
     @staticmethod
     def add_docx_answer(name):
         global MathL_answer
-        
+
         doc_answer = Document()
 
         styles = doc_answer.styles
@@ -134,13 +135,13 @@ class AutMath:
         paragraph_format = style.paragraph_format
 
         p_answer = doc_answer.add_paragraph(MathL_answer, style=style)
-        
+
         p_answer.alignment = WD_ALIGN_PARAGRAPH.LEFT
-        
+
         doc_answer.save(name + ".docx")
 
         convert(name + ".docx", name + ".pdf")
-        
+
         # convert()
 
     # 足し算のメソッド
@@ -159,7 +160,7 @@ class AutMath:
 
         sadd = (str(ad1) + '+' + str(ad2) + '=  \t')
         ad3 = ad1 + ad2
-        sadd_answer = ('=' + str(ad3) + '\t'+ '\t')
+        sadd_answer = ('=' + str(ad3) + '\t' + '\t')
         return sadd, sadd_answer
 
     # 引き算のメソッド
@@ -179,7 +180,7 @@ class AutMath:
 
         ssub = (str(su1) + '-' + str(su2) + '=  \t')
         su3 = su1 - su2
-        ssub_answer = ('=' + str(su3) + '\t'+ '\t')
+        ssub_answer = ('=' + str(su3) + '\t' + '\t')
         return ssub, ssub_answer
 
     # 掛け算のメソッド
@@ -211,9 +212,9 @@ class AutMath:
         di1 = di2 * random.randint(2, 10)
         coin = Configuration()
         if coin.probability(30):
-            di1 *= random.randint(1,10)
+            di1 *= random.randint(1, 10)
             if coin.probability(30):
-                di2 *= random.randint(1,10)
+                di2 *= random.randint(1, 10)
         if coin.probability(30):
             di1 *= -1
         if coin.probability(30):
@@ -226,7 +227,7 @@ class AutMath:
 
 class MyFrame(wx.Frame):
     def __init__(self):
-        wx.Frame.__init__(self, None, -1, "Title", size=(300,300))
+        wx.Frame.__init__(self, None, -1, "Title", size=(300, 300))
         panel = ThreeButtonPanel(self)
         panel.Bind(EVT_THREE_BUTTON, self.OnThreeButton)
 
@@ -241,40 +242,39 @@ class MyFrame(wx.Frame):
             MathL += Name_Text + '\n'
             MathL_answer += Name_Text + '\n'
             for i in range(max):
-
                 math = AutMath()
                 add_math = math.addition()
-                
-                MathL += '(' + str( 1 + i).zfill(2) + ')' + add_math[0]
-                MathL_answer += '(' + str( 1 + i).zfill(2) + ')' + add_math[1]
-                
+
+                MathL += '(' + str(1 + i).zfill(2) + ')' + add_math[0]
+                MathL_answer += '(' + str(1 + i).zfill(2) + ')' + add_math[1]
+
                 math = AutMath()
                 sub_math = math.subtraction()
                 MathL += '(' + str(26 + i) + ')' + sub_math[0]
                 MathL_answer += '(' + str(26 + i) + ')' + sub_math[1]
-                
+
                 math = AutMath()
                 mul_math = math.multiplication()
                 MathL += '(' + str(51 + i) + ')' + mul_math[0]
                 MathL_answer += '(' + str(51 + i) + ')' + mul_math[1]
-                
+
                 math = AutMath()
                 div_math = math.division()
                 MathL += '(' + str(76 + i) + ')' + div_math[0]
                 MathL_answer += '(' + str(76 + i) + ')' + div_math[1]
-                
+
                 MathL += '\n'
                 MathL_answer += '\n'
 
         if evt.get_selected_index() == 2:
             file_data = Configuration()
             math = AutMath()
-            
+
             # 問題のファイル名設定
             file_name = file_data.now_time()
             file_name += "_Q"
             file_name = file_data.mypath(file_name)
-            
+
             # 答えのファイル名設定
             file_name_answer = file_data.now_time()
             file_name_answer += "_A"
@@ -295,4 +295,3 @@ if __name__ == '__main__':
     app = wx.PySimpleApp()
     MyFrame().Show()
     app.MainLoop()
-
