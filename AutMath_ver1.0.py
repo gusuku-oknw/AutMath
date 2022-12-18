@@ -163,26 +163,27 @@ class AutMath:
                 print(self.four_rules(val, value3, polynomial=val))
 
     def four_rules(self, val1, val2, polynomial=''):
-        # a与えられた値の文字列と結果を返す
+        val0 = ''
+        # 与えられた値の文字列と結果を返す
         while polynomial != '':
             rules = random.randint(1, 4)
-            if not (((rules == 1) or (rules == 2)) and ('+' in polynomial)):
+            if ((rules == 1) or (rules == 2)) and (('×' in polynomial) or ('÷' in polynomial)):
                 break
-            elif not (((rules == 1) or (rules == 2)) and ('-' in polynomial)):
+            elif ((rules == 1) or (rules == 2)) and (('×' in polynomial) or ('÷' in polynomial)):
                 break
-            elif not (((rules == 3) or (rules == 4)) and ('×' in polynomial)):
-                poly_value = val1
-                r = str(val1).find('+' or '-')
-                val1 = int(val1[(r + 1):])
-                reg = "(?<=\().+?(?=\))"
-                val1 = re.findall(reg, val1)
-                print('val1{},{}'.format(val1, rules))
+            elif ((rules == 3) or (rules == 4)) and (('+' in polynomial) or ('-' in polynomial)):
+                r = (str(val1).find('-', 1) if (str(val1).find('+', 1) == -1) else str(val1).find('+', 1))
+                val0 = str(val1)[:r]
+                val1 = str(val1)[(r + len('+' or '-')):]
+                val1 = val1.replace("(", "").replace(")", "")
+                print('val0:({}),val1:({}), {}'.format(val0, val1, rules))
                 break
-            elif not (((rules == 3) or (rules == 4)) and ('÷' in polynomial)):
-                poly_value = val1
-                r = val1.find('+' or '-')
-                val1 = int(val1[(r + 1):])
-                print('val1{}, {}'.format(val1, rules))
+            elif ((rules == 3) or (rules == 4)) and (('+' in polynomial) or ('-' in polynomial)):
+                r = (str(val1).find('-', 1) if str(val1).find('+', 1) == -1 else str(val1).find('+', 1))
+                val0 = str(val1)[:r]
+                val1 = str(val1)[(r + 1):]
+                val1 = val1.replace("(", "").replace(")", "")
+                print('val0:({}),val1:{}, {}'.format(val0, val1, rules))
                 break
 
         else:
@@ -202,15 +203,16 @@ class AutMath:
 
         elif rules == 3:
             value = (str(val1) + '×' + ("(" + str(val2) + ")" if val2 < 0 else str(val2)))
-            answer = int(val1 * val2)
+            answer = int(val1) * val2
 
         elif rules == 4:
-            answer = val1
+            answer = int(val1)
+            # print(val1)
             if val2 > answer:
                 val2, answer = answer, val2
 
             # val1を求める
-            answer = int(val2 * val1)
+            val1 = int(val2) * answer
 
             value = (str(val1) + '÷' + ("(" + str(val2) + ")" if val2 < 0 else str(val2)))
             answer = answer
