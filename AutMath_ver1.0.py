@@ -1,3 +1,4 @@
+import re
 import os
 import wx
 import random
@@ -73,10 +74,16 @@ class ThreeButtonPanel(wx.Panel):
 
 
 class AutMath:
-    def __init__(self, percent):
+    def __init__(self, percent, default_min=1, default_max=9):
         self.percent = percent
-        print("default:"+str(percent))
+        print("default:" + str(percent))
+        self.default_min = default_min
+        self.default_max = default_max
         self.now_time()
+
+    def AutMath_randint(self, rand_min=None, rand_max=None):
+        return random.randint(self.default_min if rand_min is None else rand_min,
+                              self.default_max if rand_max is None else rand_max)
 
     def probability(self, percent=None):
         coin = random.random()
@@ -87,7 +94,7 @@ class AutMath:
             return False
 
     def carrying(self, value, mun, percent=None, numerical=None):
-        print(value)
+        # print(value)
         if mun < 1:
             return value
         # print(mun)
@@ -96,40 +103,106 @@ class AutMath:
 
         return self.carrying(value, mun - 1, percent=percent)
 
+    def fraction_integer(self):
+        x = random.randint(2 if self.default_min == 1 else self.default_min, self.default_max)
+        y = random.randint(2 if self.default_min == 1 else self.default_min, self.default_max)
+        while x % y == 0:
+            y = random.randint(2 if self.default_min == 1 else self.default_min, self.default_max)
+
+        return Fraction(x, y)
+
     def problem_generation(self, question):
         if question is None:
             pass
         elif question == 1:
-            value1 = random.randint(1, 99)
+            value1 = self.AutMath_randint()
+            value2 = self.AutMath_randint()
 
-            value2 = random.randint(1, 99)
-
-            value1 = self.carrying(value1, 1)
+            value1 = self.carrying(value1, 1, percent=20)
 
             value1 = self.carrying(value1, 1, numerical=-1)
-
             value2 = self.carrying(value2, 1, numerical=-1)
 
-            self.four_rules(value1, value2, random.randint(1, 4))
+            print(self.four_rules(value1, value2))
 
-    def four_rules(self, val1, val2, rules):
-        if rules is None:
-            pass
+        elif question == 2:
+            if self.probability():
+                value1 = self.fraction_integer()
+            else:
+                value1 = self.AutMath_randint()
+
+            if value1 is not Fraction:
+                value2 = self.fraction_integer()
+            else:
+                if self.probability():
+                    value2 = self.fraction_integer()
+                else:
+                    value2 = self.AutMath_randint()
+
+            # value1 = self.carrying(value1, 1, percent=20)
+
+            value1 = self.carrying(value1, 1, numerical=-1)
+            value2 = self.carrying(value2, 1, numerical=-1)
+
+            print(self.four_rules(value1, value2))
+
+        elif question == 3:
+            value1 = self.AutMath_randint()
+            value2 = self.AutMath_randint()
+            value3 = self.AutMath_randint()
+
+            value1 = self.carrying(value1, 1, percent=20)
+
+            value1 = self.carrying(value1, 1, numerical=-1)
+            value2 = self.carrying(value2, 1, numerical=-1)
+            print("value1:{} value2:{} value3:{}".format(value1, value2, value3))
+            val, answer = self.four_rules(value1, value2)
+            if ('×' in val) or ('÷' in val):
+                print(self.four_rules(value3, answer, polynomial=val))
+            elif ('+' in val) or ('-' in val):
+                print(self.four_rules(val, value3, polynomial=val))
+
+    def four_rules(self, val1, val2, polynomial=''):
+        # a与えられた値の文字列と結果を返す
+        while polynomial != '':
+            rules = random.randint(1, 4)
+            if not (((rules == 1) or (rules == 2)) and ('+' in polynomial)):
+                break
+            elif not (((rules == 1) or (rules == 2)) and ('-' in polynomial)):
+                break
+            elif not (((rules == 3) or (rules == 4)) and ('×' in polynomial)):
+                poly_value = val1
+                r = str(val1).find('+' or '-')
+                val1 = int(val1[(r + 1):])
+                reg = "(?<=\().+?(?=\))"
+                val1 = re.findall(reg, val1)
+                print('val1{},{}'.format(val1, rules))
+                break
+            elif not (((rules == 3) or (rules == 4)) and ('÷' in polynomial)):
+                poly_value = val1
+                r = val1.find('+' or '-')
+                val1 = int(val1[(r + 1):])
+                print('val1{}, {}'.format(val1, rules))
+                break
+
+        else:
+            rules = random.randint(1, 4)
+
+        if rules == 0:
+            value = 0
+            answer = 0
 
         elif rules == 1:
-            add = (str(val1) + '+' + str("(" + val2 + ")" if val2 < 0 else val2))
-            add_answer = val1 + val2
-            return add, add_answer
+            value = (str(val1) + '+' + ("(" + str(val2) + ")" if val2 < 0 else str(val2)))
+            answer = int(val1 + val2)
 
         elif rules == 2:
-            sub = (str(val1) + '-' + str("(" + val2 + ")" if val2 < 0 else val2))
-            sub_answer = val1 - val2
-            return sub, sub_answer
+            value = (str(val1) + '-' + ("(" + str(val2) + ")" if val2 < 0 else str(val2)))
+            answer = val1 - val2
 
         elif rules == 3:
-            mul = (str(val1) + '×' + str("(" + val2 + ")" if val2 < 0 else val2))
-            mul_answer = val1 * val2
-            return mul, mul_answer
+            value = (str(val1) + '×' + ("(" + str(val2) + ")" if val2 < 0 else str(val2)))
+            answer = int(val1 * val2)
 
         elif rules == 4:
             answer = val1
@@ -137,30 +210,36 @@ class AutMath:
                 val2, answer = answer, val2
 
             # val1を求める
-            val1 = val2 * answer
+            answer = int(val2 * val1)
 
-            div = (str(val1) + '÷' + str("(" + val2 + ")" if val2 < 0 else val2))
-            div_answer = answer
-            return div, div_answer
+            value = (str(val1) + '÷' + ("(" + str(val2) + ")" if val2 < 0 else str(val2)))
+            answer = answer
+
+        else:
+            value = None
+            answer = None
+
+        print(value, answer)
+        return str(value), answer
 
     # 足し算のメソッド
     def addition(self, ad1, ad2):
-        add = (str(ad1) + '+' + str("("+ad2+")" if ad2 < 0 else ad2))
+        add = (str(ad1) + '+' + str("(" + ad2 + ")" if ad2 < 0 else ad2))
         ad3 = ad1 + ad2
         add_answer = ('=' + str(ad3))
         return add, add_answer
 
     # 引き算のメソッド
     def subtraction_integer(self, su1, su2):
-        sub = (str(su1) + '-' + str("("+su2+")" if su2 < 0 else su2))
+        sub = (str(su1) + '-' + str("(" + su2 + ")" if su2 < 0 else su2))
         su3 = su1 - su2
         sub_answer = ('=' + str(su3))
         return sub, sub_answer
 
     # 掛け算のメソッド
     def multiplication_integer(self):
-        mu1 = random.randint(1, 9)
-        mu2 = random.randint(1, 9)
+        mu1 = self.AutMath_randint()
+        mu2 = self.AutMath_randint()
 
         mu1 = self.carrying(mu1, 1)
 
@@ -170,7 +249,7 @@ class AutMath:
 
         mu2 = self.carrying(mu2, 1, numerical=-1)
 
-        mul = (str(mu1) + '×' + str("("+mu2+")" if mu2 < 0 else mu2) + '=  \t')
+        mul = (str(mu1) + '×' + str("(" + mu2 + ")" if mu2 < 0 else mu2) + '=  \t')
         mul_answer = ('=' + str(mu1 * mu2) + '\t' + '\t')
         return mul, mul_answer
 
@@ -193,7 +272,7 @@ class AutMath:
         # di1を求める
         di1 = di2 * answer
 
-        sdiv = (str(di1) + '÷' + str("("+di2+")" if di2 < 0 else di2) + '=')
+        sdiv = (str(di1) + '÷' + str("(" + di2 + ")" if di2 < 0 else di2) + '=')
         sdiv_answer = ('=' + str(answer))
         return sdiv, sdiv_answer
 
@@ -322,8 +401,9 @@ class MyFrame(wx.Frame):
 
 
 am = AutMath(50)
-vla = am.carrying(4, 1, numerical=-1)
-print(vla)
+for i in range(50):
+    am.problem_generation(3)
+# print(vla)
 #
 # if __name__ == '__main__':
 #     app = wx.PySimpleApp()
