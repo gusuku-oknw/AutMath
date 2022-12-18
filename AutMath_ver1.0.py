@@ -158,36 +158,51 @@ class AutMath:
             print("value1:{} value2:{} value3:{}".format(value1, value2, value3))
             val, answer = self.four_rules(value1, value2)
             if ('×' in val) or ('÷' in val):
-                print(self.four_rules(value3, answer, polynomial=val))
+                print(self.four_rules(answer, value3, polynomial=val))
             elif ('+' in val) or ('-' in val):
-                print(self.four_rules(val, value3, polynomial=val))
+                print(self.four_rules(answer, value3, polynomial=val))
 
     def four_rules(self, val1, val2, polynomial=''):
         val0 = ''
+        rules = random.randint(1, 4)
         # 与えられた値の文字列と結果を返す
         while polynomial != '':
             rules = random.randint(1, 4)
-            if ((rules == 1) or (rules == 2)) and (('×' in polynomial) or ('÷' in polynomial)):
-                break
-            elif ((rules == 1) or (rules == 2)) and (('×' in polynomial) or ('÷' in polynomial)):
-                break
-            elif ((rules == 3) or (rules == 4)) and (('+' in polynomial) or ('-' in polynomial)):
-                r = (str(val1).find('-', 1) if (str(val1).find('+', 1) == -1) else str(val1).find('+', 1))
-                val0 = str(val1)[:r]
-                val1 = str(val1)[(r + len('+' or '-')):]
-                val1 = val1.replace("(", "").replace(")", "")
-                print('val0:({}),val1:({}), {}'.format(val0, val1, rules))
-                break
-            elif ((rules == 3) or (rules == 4)) and (('+' in polynomial) or ('-' in polynomial)):
-                r = (str(val1).find('-', 1) if str(val1).find('+', 1) == -1 else str(val1).find('+', 1))
-                val0 = str(val1)[:r]
-                val1 = str(val1)[(r + 1):]
-                val1 = val1.replace("(", "").replace(")", "")
-                print('val0:({}),val1:{}, {}'.format(val0, val1, rules))
-                break
+            if '-' in polynomial[0]:
+                find_num = 1
+            else:
+                find_num = 0
+            # print(find_num)
 
-        else:
-            rules = random.randint(1, 4)
+            if '×' in polynomial:
+                r = polynomial.find('×', find_num)
+            elif '÷' in polynomial:
+                r = polynomial.find('÷', find_num)
+            elif '+' in polynomial:
+                r = polynomial.find('+', find_num)
+            elif '-' in polynomial:
+                r = polynomial.find('-', find_num)
+            else:
+                r = -1
+                print("不等号がありません")
+
+            if ((rules == 1) or (rules == 2)) and (('×' in polynomial[r]) or ('÷' in polynomial[r])):
+                break
+            # elif ((rules == 1) or (rules == 2)) and (('×' in polynomial) or ('÷' in polynomial)):
+            #     break
+            elif ((rules == 3) or (rules == 4)) and (('+' in polynomial[r]) or ('-' in polynomial[r])):
+                val0 = polynomial[:r+1]
+                val1 = polynomial[r+1:]
+                val1 = val1.replace("(", "").replace(")", "")
+                print('val0:({}),val1:({}), {}'.format(val0, val1, r))
+                break
+            # elif ((rules == 3) or (rules == 4)) and (('+' in polynomial) or ('-' in polynomial)):
+            #     r = (str(val1).find('-', 1) if str(val1).find('+', 1) == -1 else str(val1).find('+', 1))
+            #     val0 = str(val1)[:r]
+            #     val1 = str(val1)[(r + 1):]
+            #     val1 = val1.replace("(", "").replace(")", "")
+            #     print('val0:({}),val1:{}, {}'.format(val0, val1, rules))
+            #     break
 
         if rules == 0:
             value = 0
@@ -221,7 +236,7 @@ class AutMath:
             value = None
             answer = None
 
-        print(value, answer)
+        print(val0, value, answer)
         return str(value), answer
 
     # 足し算のメソッド
