@@ -82,8 +82,10 @@ class AutMath:
         self.now_time()
 
     def AutMath_randint(self, rand_min=None, rand_max=None):
-        return random.randint(self.default_min if rand_min is None else rand_min,
+        rand = random.randint(self.default_min if rand_min is None else rand_min,
                               self.default_max if rand_max is None else rand_max)
+        # print(rand)
+        return rand
 
     def probability(self, percent=None):
         coin = random.random()
@@ -100,15 +102,19 @@ class AutMath:
         # print(mun)
         if self.probability(percent=percent):
             value *= (random.randint(1, 10) if numerical is None else numerical)
+            value *= (random.randint(1, 10) if numerical is None else numerical)
 
         return self.carrying(value, mun - 1, percent=percent)
 
     def fraction_integer(self):
         x = random.randint(2 if self.default_min == 1 else self.default_min, self.default_max)
+        while x == 0:
+            x = random.randint(2 if self.default_min == 1 else self.default_min, self.default_max)
         y = random.randint(2 if self.default_min == 1 else self.default_min, self.default_max)
         while x % y == 0:
             y = random.randint(2 if self.default_min == 1 else self.default_min, self.default_max)
 
+        print(Fraction(x, y))
         return Fraction(x, y)
 
     def problem_generation(self, question):
@@ -129,7 +135,7 @@ class AutMath:
             if self.probability():
                 value1 = self.fraction_integer()
             else:
-                value1 = self.AutMath_randint()
+                value1 = Fraction(self.AutMath_randint(rand_min=2), 1)
 
             if value1 is not Fraction:
                 value2 = self.fraction_integer()
@@ -137,14 +143,19 @@ class AutMath:
                 if self.probability():
                     value2 = self.fraction_integer()
                 else:
-                    value2 = self.AutMath_randint()
+                    value2 = Fraction(self.AutMath_randint(), 1)
 
             # value1 = self.carrying(value1, 1, percent=20)
 
             value1 = self.carrying(value1, 1, numerical=-1)
             value2 = self.carrying(value2, 1, numerical=-1)
 
-            print(self.four_rules(value1, value2))
+            val, answer = self.four_rules(Fraction(value1), Fraction(value2))
+            # Fraction(answer).limit_denominator(100)
+            another_answer = Fraction(answer).limit_denominator(100)
+            if answer != another_answer:
+                answer = (answer, str(another_answer))
+            print(val, answer)
 
         elif question == 3:
             value1 = self.AutMath_randint()
@@ -161,6 +172,30 @@ class AutMath:
                 print(self.four_rules(answer, value3, polynomial=val))
             elif ('+' in val) or ('-' in val):
                 print(self.four_rules(answer, value3, polynomial=val))
+
+        elif question == 4:
+            value1 = self.AutMath_randint(rand_min=2)
+            value2 = self.AutMath_randint(rand_min=2)
+            value = self.AutMath_randint(rand_min=2)
+            # if self.probability():
+            #     value1 = value * value1
+            # else:
+            #     value1 = value * value1 * value1
+            #
+            # value2 = value * value2
+
+            # value1 = self.carrying(value1, 1, percent=20)
+
+            value1 = self.carrying(value1, 1, numerical=-1)
+            value2 = self.carrying(value2, 1, numerical=-1)
+            print("元の値{}、{}".format(value1, value2))
+            # value1_sqrt = math.sqrt(value1)
+            # value2_sqrt = math.sqrt(value2)
+            # print("ルート{}、{}".format(value1_sqrt, value2_sqrt))
+            val, answer = self.four_rules(value1, value2)
+            # print("二乗{}、{}".format(int(value1_sqrt**2), int(value2_sqrt**2)))
+            print("結果{}、{}".format(val, answer))
+            print("最終{}√{}、{}√{}".format(value1, value, value2, value))
 
     def four_rules(self, val1, val2, polynomial=''):
         rules = random.randint(1, 4)
@@ -224,13 +259,14 @@ class AutMath:
             # int(val1) * val2
 
         elif rules == 4:
-            answer = int(val1)
+            answer = Fraction(val1)
             # print(val1)
-            if val2 > answer:
-                val2, answer = answer, val2
 
             # val1を求める
-            val1 = int(val2) * answer
+            val1 = Fraction(val2) * answer
+            if val2 > val1:
+                val2, val1 = val1, val2
+
             val2_str = ("(" + str(val2) + ")" if int(val2) < 0 else str(val2))
             value = ('÷' + val2_str)
             answer = eval(poly_val1+str(answer))
@@ -241,65 +277,11 @@ class AutMath:
             value = None
             answer = None
 
-        print("value:{}answer:{}".format(value, answer))
+        # print("value:{}answer:{}".format(value, answer))
         if polynomial != '':
             poly_val2 = ("(" + str(poly_val2) + ")" if int(poly_val2) < 0 else str(poly_val2))
             return (poly_val1 + poly_val2+value), answer
         return str(val1)+value, answer
-
-    # 足し算のメソッド
-    def addition(self, ad1, ad2):
-        add = (str(ad1) + '+' + str("(" + ad2 + ")" if ad2 < 0 else ad2))
-        ad3 = ad1 + ad2
-        add_answer = ('=' + str(ad3))
-        return add, add_answer
-
-    # 引き算のメソッド
-    def subtraction_integer(self, su1, su2):
-        sub = (str(su1) + '-' + str("(" + su2 + ")" if su2 < 0 else su2))
-        su3 = su1 - su2
-        sub_answer = ('=' + str(su3))
-        return sub, sub_answer
-
-    # 掛け算のメソッド
-    def multiplication_integer(self):
-        mu1 = self.AutMath_randint()
-        mu2 = self.AutMath_randint()
-
-        mu1 = self.carrying(mu1, 1)
-
-        mu2 = self.carrying(mu2, 1, percent=50)
-
-        mu1 = self.carrying(mu1, 1, numerical=-1)
-
-        mu2 = self.carrying(mu2, 1, numerical=-1)
-
-        mul = (str(mu1) + '×' + str("(" + mu2 + ")" if mu2 < 0 else mu2) + '=  \t')
-        mul_answer = ('=' + str(mu1 * mu2) + '\t' + '\t')
-        return mul, mul_answer
-
-    # 割り算のメソッド
-    def division_integer(self):
-        di2 = random.randint(2, 9)
-        answer = random.randint(2, 10)
-
-        di2 = self.carrying(di2, 2)
-
-        answer = self.carrying(answer, 2)
-
-        di2 = self.carrying(di2, 1, numerical=-1)
-
-        answer = self.carrying(answer, 1, numerical=-1)
-
-        if di2 > answer:
-            di2, answer = answer, di2
-
-        # di1を求める
-        di1 = di2 * answer
-
-        sdiv = (str(di1) + '÷' + str("(" + di2 + ")" if di2 < 0 else di2) + '=')
-        sdiv_answer = ('=' + str(answer))
-        return sdiv, sdiv_answer
 
     def now_time(self):
         dt_now = datetime.datetime.now()
@@ -427,7 +409,7 @@ class MyFrame(wx.Frame):
 
 am = AutMath(50)
 for i in range(50):
-    am.problem_generation(2)
+    am.problem_generation(4)
 # print(vla)
 #
 # if __name__ == '__main__':
