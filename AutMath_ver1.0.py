@@ -102,7 +102,6 @@ class AutMath:
         # print(mun)
         if self.probability(percent=percent):
             value *= (random.randint(1, 10) if numerical is None else numerical)
-            value *= (random.randint(1, 10) if numerical is None else numerical)
 
         return self.carrying(value, mun - 1, percent=percent)
 
@@ -116,6 +115,20 @@ class AutMath:
 
         print(Fraction(x, y))
         return Fraction(x, y)
+
+    def search_rules(self, value, find_num=0):
+        if '×' in value:
+            r = value.rfind('×', find_num)
+        elif '÷' in value:
+            r = value.rfind('÷', find_num)
+        elif '+' in value:
+            r = value.rfind('+', find_num)
+        elif '-' in value:
+            r = value.rfind('-', find_num)
+        else:
+            r = -1
+            print("不等号がありません")
+        return r
 
     def problem_generation(self, question):
         if question is None:
@@ -168,15 +181,19 @@ class AutMath:
             value2 = self.carrying(value2, 1, numerical=-1)
             print("value1:{} value2:{} value3:{}".format(value1, value2, value3))
             val, answer = self.four_rules(value1, value2)
-            if ('×' in val) or ('÷' in val):
-                print(self.four_rules(answer, value3, polynomial=val))
-            elif ('+' in val) or ('-' in val):
-                print(self.four_rules(answer, value3, polynomial=val))
+            print(self.four_rules(answer, value3, polynomial=val))
 
         elif question == 4:
-            value1 = self.AutMath_randint(rand_min=2)
-            value2 = self.AutMath_randint(rand_min=2)
-            value = self.AutMath_randint(rand_min=2)
+            answer_sqrt = None
+
+            value1 = self.AutMath_randint(rand_min=2, rand_max=7)
+            value2 = self.AutMath_randint(rand_min=2, rand_max=7)
+            while True:
+                value_sqrt = self.AutMath_randint(rand_min=2, rand_max=5)
+                value_sqrt_sub = self.AutMath_randint(rand_min=2, rand_max=5)
+                if not (value_sqrt == 4) and (value_sqrt_sub == 4):
+                    break
+
             # if self.probability():
             #     value1 = value * value1
             # else:
@@ -188,17 +205,61 @@ class AutMath:
 
             value1 = self.carrying(value1, 1, numerical=-1)
             value2 = self.carrying(value2, 1, numerical=-1)
-            print("元の値{}、{}".format(value1, value2))
+            print("元の値{}、{}、{}".format(value1, value2, value_sqrt))
             # value1_sqrt = math.sqrt(value1)
             # value2_sqrt = math.sqrt(value2)
             # print("ルート{}、{}".format(value1_sqrt, value2_sqrt))
             val, answer = self.four_rules(value1, value2)
             # print("二乗{}、{}".format(int(value1_sqrt**2), int(value2_sqrt**2)))
             print("結果{}、{}".format(val, answer))
-            print("最終{}√{}、{}√{}".format(value1, value, value2, value))
+            if '÷' in val:
+                r = val.rfind('÷')
+                value1 = val[:r]
 
-    def four_rules(self, val1, val2, polynomial=''):
-        rules = random.randint(1, 4)
+            if self.probability(percent=80):
+                v = value_sqrt * (int(value1) ** 2)
+                if v < 100:
+                    val1_str = "√" + str(v)
+                else:
+                    val1_str = str(value1) + "√" + str(value_sqrt)
+            else:
+                val1_str = str(value1) + "√" + str(value_sqrt)
+            if self.probability(percent=20):
+                v = value_sqrt * (int(value2) ** 2)
+                if v < 100:
+                    val2_str = "√" + str(v)
+                else:
+                    val2_str = str(value2) + "√" + str(value_sqrt)
+            else:
+                val2_str = str(value2) + "√" + str(value_sqrt)
+            r = self.search_rules(val)
+            rules = val[r]
+
+            if rules == '':
+                answer_str = ''
+            elif (rules == '+') or (rules == '-'):
+                answer_str = str(answer) + "√" + str(value_sqrt)
+            elif rules == '×':
+                answer_str = str(answer * value_sqrt)
+            elif rules == '÷':
+                answer_str = str(answer)
+            else:
+                answer_str = ''
+            val2_str = ("(" + str(val2_str) + ")" if val2_str[0] == '-' else str(val2_str))
+
+            print("最終{}{}{}答え{}".format(val1_str, rules, val2_str, answer_str))
+
+    def four_rules(self, val1, val2, polynomial='', rules=''):
+        rules = (random.randint(1, 4) if rules == '' else rules)
+        if rules == 1:
+            rules = '+'
+        elif rules == 2:
+            rules = '-'
+        elif rules == 3:
+            rules = '×'
+        elif rules == 4:
+            rules = '÷'
+
         poly_val1 = ''
         poly_val2 = ''
         # 与えられた値の文字列と結果を返す
@@ -209,18 +270,7 @@ class AutMath:
             else:
                 find_num = 0
             # print(find_num)
-
-            if '×' in polynomial:
-                r = polynomial.rfind('×', find_num)
-            elif '÷' in polynomial:
-                r = polynomial.rfind('÷', find_num)
-            elif '+' in polynomial:
-                r = polynomial.rfind('+', find_num)
-            elif '-' in polynomial:
-                r = polynomial.rfind('-', find_num)
-            else:
-                r = -1
-                print("不等号がありません")
+            r = self.search_rules(polynomial, find_num=find_num)
 
             poly_val1 = polynomial[:r+1]
             poly_val2 = polynomial[r + 1:]
@@ -237,34 +287,34 @@ class AutMath:
                 # print('val0:({}),val1:({}), {}'.format(poly_val1, val1, r))
                 break
 
-        if rules == 0:
+        if rules == '':
             value = 0
             answer = 0
 
-        elif rules == 1:
+        elif rules == '+':
             val2_str = ("(" + str(val2) + ")" if int(val2) < 0 else str(val2))
             value = ('+' + val2_str)
             answer = int(val1 + val2)
 
-        elif rules == 2:
+        elif rules == '-':
             val2_str = ("(" + str(val2) + ")" if int(val2) < 0 else str(val2))
             value = ('-' + val2_str)
 
             answer = val1 - val2
 
-        elif rules == 3:
+        elif rules == '×':
             val2_str = ("(" + str(val2) + ")" if int(val2) < 0 else str(val2))
             value = ('×' + val2_str)
             answer = eval(poly_val1+str(val1)+'*'+str(val2_str))
             # int(val1) * val2
 
-        elif rules == 4:
+        elif rules == '÷':
             answer = Fraction(val1)
             # print(val1)
 
             # val1を求める
             val1 = Fraction(val2) * answer
-            if val2 > val1:
+            if abs(val2) > abs(val1):
                 val2, val1 = val1, val2
 
             val2_str = ("(" + str(val2) + ")" if int(val2) < 0 else str(val2))
