@@ -3,6 +3,7 @@ import os
 import wx
 import random
 from fractions import Fraction
+import sympy
 import datetime
 import math
 from docx import Document
@@ -75,6 +76,9 @@ class ThreeButtonPanel(wx.Panel):
 
 class AutMath:
     def __init__(self, percent, default_min=1, default_max=9):
+        self.a = sympy.Symbol('a')
+        self.b = sympy.Symbol('b')
+
         self.percent = percent
         print("default:" + str(percent))
         self.default_min = default_min
@@ -194,29 +198,18 @@ class AutMath:
                 if not (value_sqrt == 4) and (value_sqrt_sub == 4):
                     break
 
-            # if self.probability():
-            #     value1 = value * value1
-            # else:
-            #     value1 = value * value1 * value1
-            #
-            # value2 = value * value2
-
-            # value1 = self.carrying(value1, 1, percent=20)
-
             value1 = self.carrying(value1, 1, numerical=-1)
             value2 = self.carrying(value2, 1, numerical=-1)
-            print("元の値{}、{}、{}".format(value1, value2, value_sqrt))
-            # value1_sqrt = math.sqrt(value1)
-            # value2_sqrt = math.sqrt(value2)
-            # print("ルート{}、{}".format(value1_sqrt, value2_sqrt))
+
+            # print("元の値{}、{}、{}".format(value1, value2, value_sqrt))
+
             val, answer = self.four_rules(value1, value2)
-            # print("二乗{}、{}".format(int(value1_sqrt**2), int(value2_sqrt**2)))
-            print("結果{}、{}".format(val, answer))
+            # print("結果{}、{}".format(val, answer))
             if '÷' in val:
                 r = val.rfind('÷')
                 value1 = val[:r]
 
-            if self.probability(percent=80):
+            if self.probability(percent=90):
                 v = value_sqrt * (int(value1) ** 2)
                 if v < 100:
                     val1_str = "√" + str(v)
@@ -249,7 +242,15 @@ class AutMath:
 
             print("最終{}{}{}答え{}".format(val1_str, rules, val2_str, answer_str))
 
+        elif question == 5:
+            value1 = self.AutMath_randint()
+            value2 = self.AutMath_randint()
+            # print(type(self.a))
+            print(self.four_rules(value1 * self.a, value2 * self.b))
+
     def four_rules(self, val1, val2, polynomial='', rules=''):
+        poly_rules = ''
+
         rules = (random.randint(1, 4) if rules == '' else rules)
         if rules == 1:
             rules = '+'
@@ -272,7 +273,8 @@ class AutMath:
             # print(find_num)
             r = self.search_rules(polynomial, find_num=find_num)
 
-            poly_val1 = polynomial[:r+1]
+            poly_val1 = polynomial[:r]
+            poly_rules = polynomial[r]
             poly_val2 = polynomial[r + 1:]
             poly_val1 = poly_val1.replace("(", "").replace(")", "")
             poly_val2 = poly_val2.replace("(", "").replace(")", "")
@@ -292,34 +294,51 @@ class AutMath:
             answer = 0
 
         elif rules == '+':
-            val2_str = ("(" + str(val2) + ")" if int(val2) < 0 else str(val2))
+            val2_str = ("(" + str(val2) + ")" if str(val2)[0] == '-' else str(val2))
             value = ('+' + val2_str)
-            answer = int(val1 + val2)
+            answer = val1 + val2
 
         elif rules == '-':
-            val2_str = ("(" + str(val2) + ")" if int(val2) < 0 else str(val2))
+            val2_str = ("(" + str(val2) + ")" if str(val2)[0] == '-' else str(val2))
             value = ('-' + val2_str)
 
             answer = val1 - val2
 
         elif rules == '×':
-            val2_str = ("(" + str(val2) + ")" if int(val2) < 0 else str(val2))
+            val2_str = ("(" + str(val2) + ")" if str(val2)[0] == '-' else str(val2))
             value = ('×' + val2_str)
-            answer = eval(poly_val1+str(val1)+'*'+str(val2_str))
+            if poly_rules != '':
+                val, val1 = self.four_rules(poly_val1, val1, rules=poly_rules)
+            answer = val1 * val2
             # int(val1) * val2
 
         elif rules == '÷':
-            answer = Fraction(val1)
-            # print(val1)
+            answer = val1
 
             # val1を求める
-            val1 = Fraction(val2) * answer
-            if abs(val2) > abs(val1):
-                val2, val1 = val1, val2
+            val1 = val2 * answer
 
-            val2_str = ("(" + str(val2) + ")" if int(val2) < 0 else str(val2))
+            if val1 is Fraction:
+                answer = Fraction(val1)
+                val2 = Fraction(val2)
+                val1 = val2 * answer
+
+            # print(val1)
+            val1_abs = val1
+            val2_abs = val2
+
+            try:
+                if val2 > val1:
+                    val2, val1 = val1, val2
+            except TypeError:
+                if val2_abs.subs([(self.a, 1), (self.b, 1)]) > val1_abs.subs([(self.a, 1), (self.b, 1)]):
+                    val2, val1 = val1, val2
+
+            val2_str = ("(" + str(val2) + ")" if str(val2)[0] == '-' else str(val2))
             value = ('÷' + val2_str)
-            answer = eval(poly_val1+str(answer))
+            if poly_rules != '':
+                val, val1 = self.four_rules(poly_val1, val1, rules=poly_rules)
+                answer = val1 / val2
 
             poly_val2 = str(val1)
 
@@ -460,6 +479,7 @@ class MyFrame(wx.Frame):
 am = AutMath(50)
 for i in range(50):
     am.problem_generation(4)
+
 # print(vla)
 #
 # if __name__ == '__main__':
