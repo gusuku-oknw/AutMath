@@ -4,6 +4,7 @@ import wx
 import random
 from fractions import Fraction
 import sympy
+from sympy import sympify
 import datetime
 import math
 from docx import Document
@@ -134,6 +135,41 @@ class AutMath:
             print("不等号がありません")
         return r
 
+    def replace_rules(self, rules):
+        if rules == 1:
+            rules = '+'
+        elif rules == 2:
+            rules = '-'
+        elif rules == 3:
+            rules = '×'
+        elif rules == 4:
+            rules = '÷'
+        else:
+            rules = rules
+
+        return rules
+
+    def replace_symbol(self, value):
+        sympy.init_printing(use_unicode=False, wrap_line=True)
+        # rep = 1
+        for i in range(len(value)):
+            if value[i] == 'a':
+                rep = value[i-2] * self.a
+            elif value[i] == 'b':
+                rep *= self.b
+            # elif value[i] == '-':
+            #     rep *= -1
+            elif value[i] == [0-9]:
+                rep *= value[i]
+            elif value[i:i+1] == '**':
+                rep *= value[i+2] * value[i+2]
+                i += 2
+            # elif value[i] == '*':
+            #     rep *= value[i+1]
+            #     i += 1
+        print("rep:{}".format(rep))
+        return rep
+
     def problem_generation(self, question):
         if question is None:
             pass
@@ -245,47 +281,74 @@ class AutMath:
         elif question == 5:
             value1 = self.AutMath_randint()
             value2 = self.AutMath_randint()
+
+            value1 = self.carrying(value1, 1, numerical=-1)
+            value2 = self.carrying(value2, 1, numerical=-1)
+
+            value1 *= self.a
+
+            if self.probability(50):
+                value1 *= self.a
+            if self.probability(30):
+                value1 *= self.b
+            if self.probability(30):
+                value1 *= self.b
+
+            if self.probability(30):
+                value2 *= self.a
+            if self.probability(30):
+                value2 *= self.a
+            if self.probability(30):
+                value2 *= self.b
+            if self.probability(30):
+                value2 *= self.b
+            val, answer = self.four_rules(value1, value2)
+            print("val:{}".format(val))
+            if self.probability(100):
+                value3 = self.AutMath_randint()
+                print(value3)
+                val, answer = self.four_rules(answer, value3, polynomial=val)
+
+            print("val:{}、answer:{}".format(val, answer))
             # print(type(self.a))
-            print(self.four_rules(value1 * self.a, value2 * self.b))
 
     def four_rules(self, val1, val2, polynomial='', rules=''):
         poly_rules = ''
-
         rules = (random.randint(1, 4) if rules == '' else rules)
-        if rules == 1:
-            rules = '+'
-        elif rules == 2:
-            rules = '-'
-        elif rules == 3:
-            rules = '×'
-        elif rules == 4:
-            rules = '÷'
+
+        rules = self.replace_rules(rules)
 
         poly_val1 = ''
         poly_val2 = ''
         # 与えられた値の文字列と結果を返す
         while polynomial != '':
             rules = random.randint(1, 4)
+
+            rules = self.replace_rules(rules)
+
             if '-' in polynomial[0]:
                 find_num = 1
             else:
                 find_num = 0
             # print(find_num)
-            r = self.search_rules(polynomial, find_num=find_num)
+            poly_value = polynomial.replace("(", "").replace(")", "")
 
-            poly_val1 = polynomial[:r]
-            poly_rules = polynomial[r]
-            poly_val2 = polynomial[r + 1:]
-            poly_val1 = poly_val1.replace("(", "").replace(")", "")
-            poly_val2 = poly_val2.replace("(", "").replace(")", "")
+            r = self.search_rules(poly_value, find_num=find_num)
 
+            poly_val1 = poly_value[:r]
+            if poly_val1[-1] == '-':
+                poly_val1 = poly_value[:r-1]
+            poly_rules = poly_value[r]
+            poly_val2 = poly_value[r + 1:]
+            print(poly_value[:r])
             # print(poly_val1, poly_val2)
-            if ((rules == 1) or (rules == 2)) and (('×' in polynomial[r]) or ('÷' in polynomial[r])):
+            if ((rules == '+') or (rules == '-')) and (('×' in poly_rules) or ('÷' in poly_rules)):
                 break
 
-            elif ((rules == 3) or (rules == 4)) and (('+' in polynomial[r]) or ('-' in polynomial[r])):
-                val1 = polynomial[r+1:]
-                val1 = val1.replace("(", "").replace(")", "")
+            elif ((rules == '×') or (rules == '÷')) and (('+' in poly_rules) or ('-' in poly_rules)):
+                val1 = sympify(poly_val1)
+                print(val1)
+                # val1 = val1.replace("(", "").replace(")", "")
                 # print('val0:({}),val1:({}), {}'.format(poly_val1, val1, r))
                 break
 
@@ -296,13 +359,13 @@ class AutMath:
         elif rules == '+':
             val2_str = ("(" + str(val2) + ")" if str(val2)[0] == '-' else str(val2))
             value = ('+' + val2_str)
-            answer = val1 + val2
+            answer = sympify(str(val1) +'+'+ str(val2))
 
         elif rules == '-':
             val2_str = ("(" + str(val2) + ")" if str(val2)[0] == '-' else str(val2))
             value = ('-' + val2_str)
 
-            answer = val1 - val2
+            answer = sympify(str(val1) +'-'+ str(val2))
 
         elif rules == '×':
             val2_str = ("(" + str(val2) + ")" if str(val2)[0] == '-' else str(val2))
@@ -324,15 +387,17 @@ class AutMath:
                 val1 = val2 * answer
 
             # print(val1)
-            val1_abs = val1
-            val2_abs = val2
-
             try:
-                if val2 > val1:
-                    val2, val1 = val1, val2
-            except TypeError:
-                if val2_abs.subs([(self.a, 1), (self.b, 1)]) > val1_abs.subs([(self.a, 1), (self.b, 1)]):
-                    val2, val1 = val1, val2
+                val1_abs = val1.subs([(self.a, 1), (self.b, 1)])
+            except AttributeError or TypeError:
+                val1_abs = float(val1)
+            try:
+                val2_abs = val2.subs([(self.a, 1), (self.b, 1)])
+            except AttributeError or TypeError:
+                val2_abs = float(val2)
+
+            if val2_abs > val1_abs:
+                val2, val1 = val1, val2
 
             val2_str = ("(" + str(val2) + ")" if str(val2)[0] == '-' else str(val2))
             value = ('÷' + val2_str)
@@ -348,8 +413,8 @@ class AutMath:
 
         # print("value:{}answer:{}".format(value, answer))
         if polynomial != '':
-            poly_val2 = ("(" + str(poly_val2) + ")" if int(poly_val2) < 0 else str(poly_val2))
-            return (poly_val1 + poly_val2+value), answer
+            poly_val2 = ("(" + str(poly_val2) + ")" if str(poly_val2)[0] == '-' else str(poly_val2))
+            return (poly_val1, str(poly_val2), value), answer
         return str(val1)+value, answer
 
     def now_time(self):
@@ -478,7 +543,7 @@ class MyFrame(wx.Frame):
 
 am = AutMath(50)
 for i in range(50):
-    am.problem_generation(4)
+    am.problem_generation(5)
 
 # print(vla)
 #
